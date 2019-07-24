@@ -10,7 +10,7 @@ var products = require("./routes/productsRoutes");
 var mongoose = require("mongoose");
 
 var app = express();
-// view engine setup
+// view engine setupp
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
 
