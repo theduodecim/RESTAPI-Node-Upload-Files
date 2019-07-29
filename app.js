@@ -6,10 +6,10 @@ var logger = require("morgan");
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
-var products = require("./routes/productsRoutes");
 var mongoose = require("mongoose");
-
 var app = express();
+const fileUpload = require("express-fileupload");
+
 // view engine setupp
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "ejs");
@@ -19,22 +19,37 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, "public")));
-
 app.use("/", indexRouter);
 app.use("/users", usersRouter);
-app.use("/products", products);
 
-//Moongose Db
+/* UPLOAD AN IMAGE */
+app.use(fileUpload());
+app.post("/upload", function(req, res) {
+  let sampleFile;
+  let uploadPath;
+  if (Object.keys(req.files).length == 0) {
+    res.status(400).send("No files were uploaded.");
+    return;
+  }
 
-mongoose.Promise = global.Promise;
-mongoose
-  .connect("mongodb://localhost/product", { useNewUrlParser: true })
-  .then(() => console.log("Conection Succesfull"))
-  .catch(err => console.log(err));
+  console.log("req.files >>>", req.files); // eslint-disable-line
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  next(createError(404));
+  sampleFile = req.files.sampleFile;
+  uploadPath = __dirname + "/uploads/" + sampleFile.name;
+
+  sampleFile.mv(uploadPath, function(err) {
+    if (err) {
+      return res.status(500).send(err);
+    }
+
+    // Converting the response to Json
+    res.json({
+      name: sampleFile.name,
+      uploadPath: uploadPath,
+      md5: sampleFile.md5,
+      size: sampleFile.size
+    });
+  });
 });
 
 // error handler
